@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask a Question - Stack Overflow Clone</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-color);
+            padding-top: 50px;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 450px;
+            padding: 8px 32px 8px 29px;
+            border: 1px solid rgba(77, 77, 77, 0.5);
+            border-radius: 3px;
+            font-size: 13px;
+            background-color: rgba(61, 61, 61, 0.5);
+            color: #ffffff;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .search-input::placeholder {
+            color: #8d8d8d;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0, 149, 255, 0.15);
+            background-color: rgba(45, 45, 45, 0.8);
+        }
+        
+        .search-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .search-button:hover {
+            background: var(--hover-color);
+        }
+
+        .ask-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 24px;
+            background: rgba(45, 45, 45, 0.95);
+            border-radius: 7px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            border: 1px solid var(--hover-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 15px;
+        }
+
+        .form-group input, .form-group textarea {
+            padding: 8px 9px;
+            border: 1px solid rgba(77, 77, 77, 0.5);
+            border-radius: 3px;
+            font-size: 13px;
+            background-color: rgba(61, 61, 61, 0.5);
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0, 149, 255, 0.15);
+            outline: none;
+            background-color: rgba(45, 45, 45, 0.8);
+        }
+
+        .form-help {
+            color: #8d8d8d;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .submit-button {
+            padding: 10px;
+            background: linear-gradient(45deg, var(--primary-color), #0074cc);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: normal;
+            transition: all 0.2s ease;
+        }
+
+        .submit-button:hover {
+            background: linear-gradient(45deg, #0074cc, var(--primary-color));
+            box-shadow: 0 2px 4px rgba(0, 149, 255, 0.2);
+        }
+
+        .submit-button:active {
+            transform: translateY(1px);
+        }
+
+        .error-message {
+            color: #d1383d;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+            padding: 8px;
+            background-color: rgba(209, 56, 61, 0.1);
+            border-radius: 3px;
+            border: 1px solid rgba(209, 56, 61, 0.2);
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 40px;
+            background: rgba(45, 45, 45, 0.95);
+            border-radius: 7px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            border: 1px solid var(--hover-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .login-prompt h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .login-prompt p {
+            color: #8d8d8d;
+            margin-bottom: 20px;
+        }
+
+        .login-prompt .auth-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .login-btn, .signup-btn {
+            padding: 8px 12px;
+            border-radius: 3px;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .login-btn {
+            color: var(--primary-color);
+            background-color: transparent;
+        }
+
+        .login-btn:hover {
+            background-color: var(--hover-color);
+            color: #ffffff;
+        }
+
+        .signup-btn {
+            color: white;
+            background: linear-gradient(45deg, var(--primary-color), #0074cc);
+        }
+
+        .signup-btn:hover {
+            background: linear-gradient(45deg, #0074cc, var(--primary-color));
+            box-shadow: 0 2px 4px rgba(0, 149, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="container">
+            <div class="top-bar-left">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">Stack Overflow Clone</span>
+                </a>
+                <nav class="main-nav">
+                    <a href="about.html" class="nav-item">About</a>
+                </nav>
+            </div>
+            <div class="top-bar-right">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search questions...">
+                    <button class="search-button" onclick="performSearch()">
+                        <i class="fas fa-search"></i>
+                        Search
+                    </button>
+                </div>
+                <div class="auth-buttons">
+                    <span id="userProfile"></span>
+                    <button id="logoutBtn" class="logout-btn" onclick="window.location.href='logout.php'">Logout</button>
+                    <a href="login.html" id="loginBtn" class="login-btn">Log in</a>
+                    <a href="login.html?action=signup" id="registerBtn" class="signup-btn">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="ask-container">
+            <div id="loginPrompt" style="display: none;">
+                <h2>Please log in to ask a question</h2>
+                <p>You need to be logged in to ask a question. <a href="login.html">Log in</a> or <a href="login.html?action=signup">sign up</a> to continue.</p>
+            </div>
+
+            <form id="askForm" action="process_question.php" method="POST" style="display: none;">
+                <h2>Ask a Question</h2>
+                <div id="errorMessage" class="error-message"></div>
+            <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required placeholder="What's your question? Be specific.">
+                    <p class="form-help">Be specific and imagine you're asking a question to another person.</p>
+            </div>
+            <div class="form-group">
+                    <label for="body">Body</label>
+                    <textarea id="body" name="body" required placeholder="Describe your question in detail..."></textarea>
+                    <p class="form-help">Include all the information someone would need to answer your question.</p>
+            </div>
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <input type="text" id="tags" name="tags" placeholder="Add tags (comma separated)">
+                    <p class="form-help">Add up to 5 tags to describe what your question is about.</p>
+        </div>
+                <button type="submit" class="submit-button">Post Question</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Check authentication status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const userProfile = document.getElementById('userProfile');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const askForm = document.getElementById('askForm');
+            const loginPrompt = document.getElementById('loginPrompt');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Check for error messages in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            if (error) {
+                switch(error) {
+                    case 'empty_fields':
+                        errorMessage.textContent = 'Please fill in all required fields';
+                        break;
+                    case 'database_error':
+                        errorMessage.textContent = 'An error occurred while saving your question. Please try again.';
+                        break;
+                    case 'question_failed':
+                        errorMessage.textContent = 'Failed to post your question. Please try again.';
+                        break;
+                }
+                errorMessage.classList.add('show');
+            }
+
+            if (currentUser) {
+                userProfile.textContent = currentUser.username;
+                userProfile.style.display = 'inline-block';
+                loginBtn.style.display = 'none';
+                registerBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                askForm.style.display = 'block';
+                loginPrompt.style.display = 'none';
+            } else {
+                userProfile.style.display = 'none';
+                loginBtn.style.display = 'inline-block';
+                registerBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                askForm.style.display = 'none';
+                loginPrompt.style.display = 'block';
+        }
+        });
+    </script>
+</body>
+</html> 

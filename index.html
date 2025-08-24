@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Overflow like system</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="top-bar">
+        <div class="container">
+            <div class="top-bar-left">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">Stack Overflow Clone</span>
+                </a>
+                <nav class="main-nav">
+                    <a href="about.html" class="nav-item">About</a>
+                </nav>
+            </div>
+            <div class="top-bar-right">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search questions...">
+                    <button class="search-button" onclick="performSearch()">
+                        <i class="fas fa-search"></i>
+                        Search
+                    </button>
+                </div>
+                <div class="auth-buttons">
+                    <span id="userProfile" style="display: none;"></span>
+                    <button id="logoutBtn" style="display: none;" class="logout-btn" onclick="window.location.href='logout.php'">Logout</button>
+                    <a href="login.html" id="loginBtn" class="login-btn">Log in</a>
+                    <a href="login.html?action=signup" id="registerBtn" class="signup-btn">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <nav class="sidebar">
+            <div class="sidebar-nav">
+                <a href="index.html" class="sidebar-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="questions.html" class="sidebar-item">
+                    <i class="fas fa-list"></i>
+                    <span>Questions</span>
+                </a>
+            </div>
+        </nav>
+        <main class="content">
+            <div id="welcomeSection" class="welcome-section">
+                <h1>Welcome to Stack Overflow Clone</h1>
+                <p>Join our community of developers to ask questions, share knowledge, and grow together.</p>
+                <div class="welcome-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-users"></i>
+                        <span>10,000+</span>
+                        <p>Developers</p>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-question-circle"></i>
+                        <span>5,000+</span>
+                        <p>Questions</p>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>15,000+</span>
+                        <p>Answers</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="userStatsSection" class="user-stats-container" style="display: none;">
+                <div class="stats-box">
+                    <div class="stats-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stats-info">
+                        <h3>Questions Answered</h3>
+                        <p class="stats-number" id="questions-answered">0</p>
+                        <p class="stats-label">Total answers provided</p>
+                    </div>
+                </div>
+                <div class="stats-box">
+                    <div class="stats-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="stats-info">
+                        <h3>Questions Posted</h3>
+                        <p class="stats-number" id="questions-posted">0</p>
+                        <p class="stats-label">Total questions asked</p>
+                    </div>
+                </div>
+                <div class="stats-box">
+                    <div class="stats-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stats-info">
+                        <h3>Reputation Score</h3>
+                        <p class="stats-number" id="reputation-score">0</p>
+                        <p class="stats-label">Community recognition</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="userActivitySection" class="user-activity-section" style="display: none;">
+                <h2 class="section-title">Your Recent Activity</h2>
+                <div class="activity-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="question">Questions</button>
+                    <button class="filter-btn" data-filter="answer">Answers</button>
+                </div>
+                <div id="activityList" class="activity-list">
+                    <!-- Activity items will be dynamically added here -->
+                </div>
+            </div>
+
+            <div class="search-filters" id="searchFilters" style="display: none;">
+                <select class="filter-select" id="tagFilter" onchange="applyFilters()">
+                    <option value="">All Tags</option>
+                </select>
+                <select class="filter-select" id="dateFilter" onchange="applyFilters()">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year">This Year</option>
+                </select>
+                <select class="filter-select" id="voteFilter" onchange="applyFilters()">
+                    <option value="">Most Recent</option>
+                    <option value="most">Most Voted</option>
+                    <option value="least">Least Voted</option>
+                </select>
+            </div>
+            <div class="search-results" id="searchResults"></div>
+        </main>
+    </div>
+
+    <style>
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px 0;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-item h3 {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .stat-item p {
+        color: #333;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .user-activity-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(45, 45, 45, 0.95);
+        border-radius: 7px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        border: 1px solid var(--hover-color);
+    }
+
+    .section-title {
+        color: #ffffff;
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .activity-filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        background: transparent;
+        border: 1px solid var(--primary-color);
+        border-radius: 3px;
+        color: var(--primary-color);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+        background-color: var(--hover-color);
+        color: #ffffff;
+    }
+
+    .filter-btn.active {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .activity-item {
+        background: rgba(45, 45, 45, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .activity-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .vote-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-right: 15px;
+        min-width: 40px;
+    }
+
+    .vote-button {
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.2s ease;
+    }
+
+    .vote-button:hover {
+        color: var(--primary-color);
+    }
+
+    .vote-button.active {
+        color: var(--primary-color);
+    }
+
+    .vote-count {
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        margin: 5px 0;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-item .username {
+        color: var(--primary-color);
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .activity-item .username::before {
+        content: '@';
+        color: var(--primary-color);
+    }
+
+    .activity-item .content {
+        color: #ffffff;
+        margin: 8px 0;
+        line-height: 1.4;
+        font-size: 14px;
+    }
+
+    .activity-item .date {
+        color: #8d8d8d;
+        font-size: 12px;
+    }
+
+    .activity-item.question .type {
+        background: #2ecc71;
+    }
+
+    .activity-item.answer .type {
+        background: #3498db;
+    }
+
+    .search-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-left: 20px;
+        flex: 1;
+        max-width: 600px;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid var(--hover-color);
+        border-radius: 3px;
+        background: rgba(61, 61, 61, 0.5);
+        color: var(--text-color);
+        font-size: 14px;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(0, 149, 255, 0.15);
+    }
+
+    .search-button {
+        padding: 8px 16px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .search-button:hover {
+        background: var(--hover-color);
+    }
+
+    .search-filters {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        padding: 6px 10px;
+        border: 1px solid var(--hover-color);
+        border-radius: 3px;
+        background: rgba(61, 61, 61, 0.5);
+        color: var(--text-color);
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+
+    .search-results {
+        margin-top: 20px;
+    }
+
+    .no-results {
+        text-align: center;
+        color: #8d8d8d;
+        padding: 20px;
+    }
+    </style>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const userProfile = document.getElementById('userProfile');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const welcomeSection = document.getElementById('welcomeSection');
+            const userStatsSection = document.getElementById('userStatsSection');
+            const userActivitySection = document.getElementById('userActivitySection');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            let currentFilter = 'all';
+            let allActivities = [];
+
+            // Filter button click handler
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    displayActivities();
+                });
+            });
+
+            function displayActivities() {
+                const activityList = document.getElementById('activityList');
+                activityList.innerHTML = '';
+                
+                const filteredActivities = currentFilter === 'all' 
+                    ? allActivities 
+                    : allActivities.filter(activity => activity.type === currentFilter);
+                
+                filteredActivities.forEach(activity => {
+                    const item = document.createElement('div');
+                    item.className = 'activity-item';
+                    item.style.display = 'flex';
+                    
+                    // Add vote container
+                    const voteContainer = document.createElement('div');
+                    voteContainer.className = 'vote-container';
+                    
+                    const upButton = document.createElement('button');
+                    upButton.className = 'vote-button';
+                    upButton.innerHTML = '▲';
+                    upButton.onclick = (e) => handleVote(e, activity.id, activity.type, 'up');
+                    
+                    const voteCount = document.createElement('div');
+                    voteCount.className = 'vote-count';
+                    voteCount.textContent = activity.vote_count || 0;
+                    
+                    const downButton = document.createElement('button');
+                    downButton.className = 'vote-button';
+                    downButton.innerHTML = '▼';
+                    downButton.onclick = (e) => handleVote(e, activity.id, activity.type, 'down');
+                    
+                    voteContainer.appendChild(upButton);
+                    voteContainer.appendChild(voteCount);
+                    voteContainer.appendChild(downButton);
+                    
+                    const content = document.createElement('div');
+                    content.className = 'activity-content';
+                    
+                    const username = document.createElement('div');
+                    username.className = 'username';
+                    username.textContent = `@${activity.author_name || 'Unknown User'}`;
+                    
+                    const postContent = document.createElement('div');
+                    postContent.className = 'content';
+                    postContent.textContent = activity.type === 'question' ? activity.title : activity.body;
+                    
+                    const date = document.createElement('div');
+                    date.className = 'date';
+                    date.textContent = new Date(activity.created_at).toLocaleString();
+                    
+                    content.appendChild(username);
+                    content.appendChild(postContent);
+                    content.appendChild(date);
+                    
+                    item.appendChild(voteContainer);
+                    item.appendChild(content);
+                    
+                    // Add click handler for the entire item
+                    item.onclick = (e) => {
+                        if (!e.target.classList.contains('vote-button')) {
+                            if (activity.type === 'question') {
+                                window.location.href = `question.html?id=${activity.id}`;
+                            } else {
+                                fetch(`get_answer_question.php?id=${activity.id}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.question_id) {
+                                            window.location.href = `question.html?id=${data.question_id}#answer-${activity.id}`;
+                                        }
+                                    });
+                            }
+                        }
+                    };
+                    
+                    activityList.appendChild(item);
+                });
+            }
+
+            async function handleVote(event, contentId, contentType, voteType) {
+                event.stopPropagation();
+                
+                try {
+                    const response = await fetch('handle_vote.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            content_id: contentId,
+                            content_type: contentType,
+                            vote_type: voteType
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Update vote count
+                        const voteCount = event.target.parentElement.querySelector('.vote-count');
+                        voteCount.textContent = data.vote_count;
+                        
+                        // Update button states
+                        const upButton = event.target.parentElement.querySelector('.vote-button:first-child');
+                        const downButton = event.target.parentElement.querySelector('.vote-button:last-child');
+                        
+                        upButton.classList.toggle('active', data.user_vote === 'up');
+                        downButton.classList.toggle('active', data.user_vote === 'down');
+                    }
+                } catch (error) {
+                    console.error('Error handling vote:', error);
+                }
+            }
+
+            if (currentUser && currentUser.username) {
+                userProfile.textContent = currentUser.username;
+                userProfile.style.display = 'inline-block';
+                loginBtn.style.display = 'none';
+                registerBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                welcomeSection.style.display = 'none';
+                userStatsSection.style.display = 'flex';
+                userActivitySection.style.display = 'block';
+                
+                // Fetch and display user statistics
+                fetch('get_user_stats.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('questions-posted').textContent = data.questions_count;
+                        document.getElementById('questions-answered').textContent = data.answers_count;
+                        document.getElementById('reputation-score').textContent = data.reputation;
+                        
+                        // Store all activities and display them
+                        allActivities = data.activities;
+                        displayActivities();
+                    })
+                    .catch(error => console.error('Error fetching user statistics:', error));
+            } else {
+                userProfile.style.display = 'none';
+                loginBtn.style.display = 'inline-block';
+                registerBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                welcomeSection.style.display = 'block';
+                userStatsSection.style.display = 'none';
+                userActivitySection.style.display = 'none';
+            }
+        });
+
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (searchTerm) {
+                window.location.href = `search_results.html?q=${encodeURIComponent(searchTerm)}`;
+            }
+        }
+
+        // Add event listener for Enter key in search input
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            const tagFilter = document.getElementById('tagFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const voteFilter = document.getElementById('voteFilter').value;
+
+            const queryParams = new URLSearchParams({
+                search: searchTerm,
+                tag: tagFilter,
+                date: dateFilter,
+                votes: voteFilter
+            });
+
+            fetch(`search_questions.php?${queryParams}`)
+                .then(response => response.json())
+                .then(questions => {
+                    const resultsContainer = document.getElementById('searchResults');
+                
+                    if (questions.length === 0) {
+                        resultsContainer.innerHTML = '<div class="no-results">No questions found</div>';
+                        return;
+                    }
+
+                    resultsContainer.innerHTML = questions.map(question => `
+                        <div class="question-item">
+                            <a href="question.html?id=${question.id}" class="question-title">${question.title}</a>
+                            <div class="question-meta">
+                                <span>Asked by ${question.author_name}</span>
+                                <span>${new Date(question.created_at).toLocaleDateString()}</span>
+                                <span>${question.vote_count} votes</span>
+                            </div>
+                            <div class="question-tags">
+                                ${question.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error searching questions:', error);
+                    document.getElementById('searchResults').innerHTML = 
+                        '<div class="no-results">Error searching questions. Please try again.</div>';
+                });
+        }
+
+        // Load available tags for the tag filter
+        function loadTags() {
+            fetch('get_tags.php')
+                .then(response => response.json())
+                .then(tags => {
+                    const tagFilter = document.getElementById('tagFilter');
+                    tags.forEach(tag => {
+                        const option = document.createElement('option');
+                        option.value = tag;
+                        option.textContent = tag;
+                        tagFilter.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading tags:', error));
+                }
+
+        // Load tags when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTags();
+        });
+    </script>
+</body>
+</html>

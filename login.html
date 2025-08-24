@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Register - Stack Overflow Clone</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="top-bar">
+        <div class="container">
+            <div class="top-bar-left">
+                <a href="index.html" class="logo">
+                    <i class="fab fa-stack-overflow"></i>
+                    <span class="logo-text">Stack Overflow Clone</span>
+                </a>
+                <nav class="main-nav">
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="about.html" class="nav-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>About</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="top-bar-right">
+                <div class="auth-buttons">
+                    <span id="userProfile" style="display: none;"></span>
+                    <button id="logoutBtn" style="display: none;" onclick="window.location.href='logout.php'">Logout</button>
+                    <a href="login.html" id="loginBtn" class="login-btn">Log in</a>
+                    <a href="login.html?action=signup" id="registerBtn" class="signup-btn">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <script>
+        // Check authentication status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const userProfile = document.getElementById('userProfile');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (currentUser) {
+                userProfile.textContent = currentUser.username;
+                userProfile.style.display = 'inline-block';
+                loginBtn.style.display = 'none';
+                registerBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+
+    <main>
+        <div class="auth-container">
+            <div class="auth-header">
+                <h2>Join the Stack Overflow community</h2>
+                <p>Find the best answers to your technical questions</p>
+            </div>
+
+            <!-- Error Message Display -->
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <div id="loginForm" class="auth-form">
+                <form action="process_login.php" method="POST" onsubmit="return validateLoginForm()">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" name="password" required>
+                    </div>
+                    <button type="submit" class="auth-button">Log in</button>
+                    <div class="switch-form">
+                        <p>Don't have an account? <a href="#" onclick="switchToRegister()">Sign up</a></p>
+                    </div>
+                </form>
+            </div>
+
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <form action="process_register.php" method="POST" onsubmit="return validateRegisterForm()">
+                    <div class="form-group">
+                        <label for="registerUsername">Username</label>
+                        <input type="text" id="registerUsername" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" name="password" required>
+                    </div>
+                    <button type="submit" class="auth-button">Sign up</button>
+                    <div class="switch-form">
+                        <p>Already have an account? <a href="#" onclick="switchToLogin()">Log in</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Check URL parameters for errors
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const action = urlParams.get('action');
+        
+        if (error) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'block';
+            
+            switch(error) {
+                case 'empty_fields':
+                    errorMessage.textContent = 'Please fill in all fields';
+                    break;
+                case 'invalid_password':
+                    errorMessage.textContent = 'Invalid password';
+                    break;
+                case 'user_not_found':
+                    errorMessage.textContent = 'User not found';
+                    break;
+                case 'database_error':
+                    errorMessage.textContent = 'Database error occurred';
+                    break;
+                case 'invalid_email':
+                    errorMessage.textContent = 'Please enter a valid email address';
+                    break;
+                case 'weak_password':
+                    const details = urlParams.get('details');
+                    if (details) {
+                        const requirements = details.split(',').map(req => {
+                            switch(req) {
+                                case 'length': return 'at least 8 characters long';
+                                case 'uppercase': return 'one uppercase letter';
+                                case 'lowercase': return 'one lowercase letter';
+                                case 'number': return 'one number';
+                                case 'special': return 'one special character (!@#$%^&*)';
+                                default: return req;
+                            }
+                        });
+                        errorMessage.textContent = 'Password must contain ' + requirements.join(', ');
+                    } else {
+                        errorMessage.textContent = 'Password must be at least 8 characters long';
+                    }
+                    break;
+                case 'email_exists':
+                    errorMessage.textContent = 'This email is already registered';
+                    break;
+                case 'username_exists':
+                    errorMessage.textContent = 'This username is already taken';
+                    break;
+                case 'registration_failed':
+                    errorMessage.textContent = 'Registration failed. Please try again.';
+                    break;
+                default:
+                    errorMessage.textContent = 'An error occurred';
+            }
+        }
+        
+        if (action === 'signup') {
+            switchToRegister();
+        }
+
+        function switchToRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'flex';
+            document.getElementById('errorMessage').style.display = 'none';
+            window.history.replaceState({}, '', 'login.html?action=signup');
+        }
+
+        function switchToLogin() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'flex';
+            document.getElementById('errorMessage').style.display = 'none';
+            window.history.replaceState({}, '', 'login.html');
+        }
+
+        function validateLoginForm() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                document.getElementById('errorMessage').textContent = 'Please fill in all fields';
+                document.getElementById('errorMessage').style.display = 'block';
+                return false;
+            }
+            
+            return true;
+        }
+
+        function validateRegisterForm() {
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (!username || !email || !password) {
+                errorMessage.textContent = 'Please fill in all fields';
+                errorMessage.style.display = 'block';
+                return false;
+            }
+
+            // Password validation
+            const passwordErrors = [];
+            
+            if (password.length < 8) {
+                passwordErrors.push('at least 8 characters long');
+            }
+            if (!/[A-Z]/.test(password)) {
+                passwordErrors.push('one uppercase letter');
+            }
+            if (!/[a-z]/.test(password)) {
+                passwordErrors.push('one lowercase letter');
+            }
+            if (!/[0-9]/.test(password)) {
+                passwordErrors.push('one number');
+            }
+            if (!/[!@#$%^&*]/.test(password)) {
+                passwordErrors.push('one special character (!@#$%^&*)');
+            }
+
+            if (passwordErrors.length > 0) {
+                errorMessage.textContent = 'Password must contain ' + passwordErrors.join(', ');
+                errorMessage.style.display = 'block';
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
+</body>
+</html> 
